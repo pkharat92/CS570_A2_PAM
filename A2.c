@@ -8,7 +8,7 @@ int main(int argc, char* argv[]) {
 	int execFlag = 0;
 	
 	while(1) {
-		printf("cssc0884% ");
+		printf("cssc0844% ");
 		if(getInput(inputStr) continue;
 		
 		// Exec flag returns 1 if normal command,

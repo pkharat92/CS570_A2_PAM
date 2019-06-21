@@ -2,23 +2,29 @@
 
 using namespace std;
 
-const char *filename;
-
 int main() {
 	while(true) {
+		string str;
+		const char *filename;
+		
 		cout <<	"cssc0884% ";
-		cin >> filename;
+		cin >> str;
+		
+		if(tolower(str) == "exit") return 0;
+		else filename = str.c_str();
+		
 		if(is_exec(filename))
 			// Create process and
 			// run files
 			
 		// Need if statement to 
 		// check if user writes "exit"
+	} // End while
 } // End main
 
 /** Checks if the file is executable
  */
-bool is_exec(const char *filename {
+bool is_exec(const char *filename) {
 	struct stat file_status;
 	
 	// Returns file type and mode,

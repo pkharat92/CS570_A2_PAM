@@ -1,6 +1,4 @@
-#include "A2.h"
-
-using namespace std;
+#include "a2.h"
 
 int main(int argc, char* argv[]) {
 	char inputStr[MAX_SIZE], *parsedArgs[MAX_LIST];
@@ -8,8 +6,8 @@ int main(int argc, char* argv[]) {
 	int execFlag = 0;
 	
 	while(1) {
-		printf("cssc0844% ");
-		if(getInput(inputStr) continue;
+		printf("cssc0844%% ");
+		if(getInput(inputStr)) continue;
 		
 		// Exec flag returns 1 if normal command,
 		// returns 2 if piped command
@@ -33,7 +31,7 @@ int main(int argc, char* argv[]) {
 int getInput(char* str) {
 	char* buf;
 	
-	buf = readline();
+	buf = readline(NULL);
 	if(strlen(buf) != 0) {
 		add_history(buf);
 		strcpy(str, buf);
@@ -60,7 +58,8 @@ int processStr(char* str, char** parsed, char** parsedPiped) {
 	else parseSpace(str, parsed);
 	
 	// Checks if user invoked "exit" command
-	if(strcmp(parsed[0], tolower("exit")) == 0) {
+	char* strLow = strlwr(parsed[0]);
+	if(strcmp(strLow, exitCmd) == 0) {
 		printf("\nGoodbye\n"); 
 		exit(0);
 	}
@@ -73,7 +72,8 @@ int processStr(char* str, char** parsed, char** parsedPiped) {
 int parsePipe(char* str, char** str_piped) {
 	// Tokenizes piped command, 
 	// using "|" as delimiter
-	for(int i = 0; i < 2; i++_ {
+	int i;
+	for(i = 0; i < 2; i++) {
 		str_piped[i] = strsep(&str, "|");
 		if(str_piped[i] == NULL) return 0;
 	} // End for
@@ -85,7 +85,11 @@ int parsePipe(char* str, char** str_piped) {
   * Parses normal command
   */	
 void parseSpace(char* str, char** parsed) {
-	for(int i = 0; i < MAX_LIST; i++) {
+	// Tokenizes either normal
+	// or piped commands, using
+	// whitespace as delimiter
+	int i;
+	for(i = 0; i < MAX_LIST; i++) {
 		parsed[i] = strsep(&str, " ");
 		 
 		// If end of array is reached
@@ -104,12 +108,12 @@ void execArgs(char** parsed) {
 	pid_t pid = fork();
 	
 	if(pid == -1) {
-		printf("\nUnable to fork child process");
+		printf("\nUnable to fork child process\n");
 		return;
 	} 
 	else if (pid == 0) {
 		if(execvp(parsed[0], parsed) < 0) 
-			printf("\nUnable to execute command");
+			printf("\nUnable to execute command\n");
 		exit(0);
 	}
 	else {
@@ -127,7 +131,7 @@ void execArgsPiped(char** parsed, char** parsedPiped) {
 	pid_t p1, p2;
 	
 	if(pipe(pipefd) < 0) {
-		printf("\nUnable to create pipe");
+		printf("\nUnable to create pipe\n");
 		return;
 	}
 	
@@ -140,8 +144,8 @@ void execArgsPiped(char** parsed, char** parsedPiped) {
 		close(pipefd[1]);
 		
 		if(execvp(parsed[0], parsed) < 0) {
-			printf("\nUnable to execute command 1");
-			exit(0)
+			printf("\nUnable to execute command 1\n");
+			exit(0);
 		}
 	}
 	// Parent is running
@@ -154,7 +158,7 @@ void execArgsPiped(char** parsed, char** parsedPiped) {
 			dup2(pipefd[0], STDIN_FILENO); 
 			close(pipefd[0]); 
 			if(execvp(parsedPiped[0], parsedPiped) < 0) {
-				printf("\nUnable to execute command 2");
+				printf("\nUnable to execute command 2\n");
 				exit(0);
 			}
 		}
@@ -165,3 +169,14 @@ void execArgsPiped(char** parsed, char** parsedPiped) {
 		}
 	}
 } // End void execArgsPiped()
+
+char *strlwr(char *str) {
+	unsigned char *p = (unsigned char *)str;
+	
+	while(*p) {
+		*p = tolower((unsigned char) *p;
+		 p++;
+	} // End while
+	
+	return str;
+} // End char *strlwr()

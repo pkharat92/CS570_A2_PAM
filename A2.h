@@ -10,9 +10,6 @@
 #define MAX_SIZE 1000 // max number of letters supported
 #define MAX_LIST 100 // max number of commands supported
 
-// Clearing shell using escape sequences
-#define clear() printf("\033]H\033[J")
-
 //Function prototypes
 int getInput(char* str);
 int processStr(char* str, char** parsed, char** parsedPiped);

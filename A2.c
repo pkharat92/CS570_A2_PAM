@@ -61,6 +61,7 @@ int processStr(char* str, char** parsed, char** parsedPiped) {
 	char* strLow = strlwr(parsed[0]);
 	if(strcmp(strLow, exitCmd) == 0) {
 		printf("\nGoodbye\n"); 
+		kill(0, SIGTERM);
 		exit(0);
 	}
 	else return 1 + piped;

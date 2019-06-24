@@ -12,6 +12,7 @@
 #define MAX_PIPE 99 // max number of pipes
 
 char exitCmd[] = "exit";
+int n; // actual numnber of piped commands
 
 //Function prototypes
 int getInput(char* str);

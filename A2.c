@@ -74,12 +74,13 @@ int parsePipe(char* str, char** str_piped) {
 	// Tokenizes piped command, 
 	// using "|" as delimiter
 	int i;
-	for(i = 0; i < 2; i++) {
+	for(i = 0; i < MAX_PIPE; i++) {
 		str_piped[i] = strsep(&str, "|");
-		if(str_piped[i] == NULL) return 0;
+		if(str_piped[i] == NULL) break;
 	} // End for
-	 
-	 return 1;
+	
+	if(str_piped[1] == NULL) return 0;
+	return 1;
 } // End parsePipe()
  
 /**

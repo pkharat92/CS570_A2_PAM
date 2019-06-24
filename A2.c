@@ -191,6 +191,9 @@ void execArgsPiped(char** parsedPiped) {
 	}
 } // End void execArgsPiped()
 
+/**
+  * Helper function for execArgsPiped()
+  */
 void spawn_proc(int in, int out, char** parsedPiped) {
 	pid_t pid; 
 	
@@ -217,7 +220,7 @@ void spawn_proc(int in, int out, char** parsedPiped) {
 				exit(0);
 		}
 	}
-}
+} // End spawn_proc()
 
 /**
   * Converts string to lowercase

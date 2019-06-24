@@ -9,8 +9,10 @@
 
 #define MAX_SIZE 1000 // max number of letters supported
 #define MAX_LIST 100 // max number of commands supported
+#define MAX_PIPE 99 // max number of pipes
 
 char exitCmd[] = "exit";
+int n; // actual numnber of piped commands
 
 //Function prototypes
 int getInput(char* str);

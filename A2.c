@@ -44,28 +44,18 @@ int getInput(char* str) {
   * Processes user input
   */
 int processStr(char* str, char** parsed, char** parsedPiped) {
-	char* str_piped[MAX_PIPE];
+	char* str_piped[MAX_LIST];
 	int piped = 0;
 	
 	piped = parsePipe(str, str_piped);
-	
-	// Piped command is parsed
-	if(piped) {
-		parseSpace(str_piped, parsedPiped);
-	}
-	// Normal command is parsed
+	 
+	if(piped) parseSpaceArry(str_piped, parsedPiped);
 	else parseSpace(str, parsed);
-	
-	if(parsed[3] != NULL) {
-		printf("\nCan only accept one argument\n");
-		return 0;
-	}
-	
+
 	// Checks if user invoked "exit" command
 	char* strLow = strlwr(parsed[0]);
 	if(strcmp(strLow, exitCmd) == 0) {
 		printf("\nGoodbye\n"); 
-		kill(0, SIGTERM);
 		exit(0);
 	}
 	else return 1 + piped;
@@ -75,17 +65,14 @@ int processStr(char* str, char** parsed, char** parsedPiped) {
   * Parses piped command
   */
 int parsePipe(char* str, char** str_piped) {
-	// Tokenizes piped command, 
-	// using "|" as delimiter
 	int i;
-	for(i = 0; i < MAX_PIPE; i++) {
+	for(i = 0; i < MAX_LIST; i++) {
 		str_piped[i] = strsep(&str, "|");
 		if(str_piped[i] == NULL) break;
-		n = --i;
 	} // End for
 	
 	if(str_piped[1] == NULL) return 0;
-	return 1;
+	else return 1;
 } // End parsePipe()
  
 /**
@@ -93,17 +80,11 @@ int parsePipe(char* str, char** str_piped) {
   * takes single string as input
   */	
 void parseSpace(char* str, char** parsed) {
-	// Tokenizes either normal
-	// or piped commands, using
-	// whitespace as delimiter
 	int i;
 	for(i = 0; i < MAX_LIST; i++) {
 		parsed[i] = strsep(&str, " ");
-		 
-		// If end of array is reached
+		
 		if(parsed[i] == NULL) break;
-		 
-		// If token is '\0', ignore it
 		if(strlen(parsed[i]) == 0) i--;
 	} // End for
 } // End parseSpace()
@@ -112,23 +93,15 @@ void parseSpace(char* str, char** parsed) {
   * Parses normal command;
   * takes string array as input
   */	
-void parseSpace(char** str, char** parsed) {
-	// Tokenizes either normal
-	// or piped commands, using
-	// whitespace as delimiter
+void parseSpaceArry(char** str_piped, char** parsed) {
 	int i;
 	for(i = 0; i < MAX_LIST; i++) {
-		parsed[i] = strsep(str[i], " ");
-		 
-		// If end of array is reached
+		parsed[i] = strsep(&str_piped[i], " ");
+		
 		if(parsed[i] == NULL) break;
-		 
-		// If token is '\0', ignore it
 		if(strlen(parsed[i]) == 0) i--;
 	} // End for
 } // End parseSpace()
- 
- 
 /**
   * Executes normal system commands
   */
@@ -137,7 +110,7 @@ void execArgs(char** parsed) {
 	pid_t pid = fork();
 	
 	if(pid == -1) {
-		printf("\nUnable to fork child process\n");
+		printf("\nUnable to fork\n");
 		return;
 	} 
 	else if (pid == 0) {
@@ -169,7 +142,7 @@ void execArgsPiped(char** parsedPiped) {
 		
 		// fd[1] is write end of pipe, 
 		// carry "in" from previous iteration
-		spawn_proc(in, fd[1], parsedPiped[i]);
+		spawn_proc(in, fd[1], i, parsedPiped);
 		
 		// Close write end of pipe, child will
 		// write to next pipe
@@ -183,42 +156,56 @@ void execArgsPiped(char** parsedPiped) {
 	// Last process, set stdin to read end of
 	// previous pipe and output to original fd
 	if(in != 0) dup2(in, 0);
-		
-	// Run the last process
-	if(execvp(parsedPiped[i], parsedPiped) < 0) {
-		printf("\nUnable to execute command 2\n");
-		exit(0);
+	
+	if(pid == -1) {
+		printf("\nUnable to fork\n");
+		return;
+	}
+	else if(pid == 0) {	
+		// Run the last process
+		if(execvp(parsedPiped[i], parsedPiped) < 0) {
+			printf("\nUnable to execute command\n");
+			exit(0);
+		}
+	}
+	else {
+		wait(NULL);	
+		return;
 	}
 } // End void execArgsPiped()
 
 /**
   * Helper function for execArgsPiped()
   */
-void spawn_proc(int in, int out, char** parsedPiped) {
+void spawn_proc(int in, int out, int i, char** parsedPiped) {
 	pid_t pid; 
 	
 	pid = fork();
 	
-	if(pid < 0) {
+	if(pid == -1) {
 		printf("\nUnable to create pipe\n");
 		return;
 	}
 	
 	if(pid == 0) {
 		if(in != 0) {
-			dup(in, 0);
+			dup2(in, 0);
 			close(in);
 		}
 		
 		if(out != 1) {
-			dup(out, 1);
+			dup2(out, 1);
 			close(out);
 		}
 		
-		if(execvp(parsedPiped[0], parsedPiped) < 0) {
+		if(execvp(parsedPiped[i], parsedPiped) < 0) {
 				printf("\nUnable to execute piped command\n");
 				exit(0);
 		}
+	}
+	else {
+		wait(NULL);
+		return;
 	}
 } // End spawn_proc()
 
@@ -229,7 +216,7 @@ char *strlwr(char *str) {
 	unsigned char *p = (unsigned char *)str;
 	
 	while(*p) {
-		*p = tolower((unsigned char) *p;
+		*p = tolower((unsigned char) *p);
 		 p++;
 	} // End while
 	

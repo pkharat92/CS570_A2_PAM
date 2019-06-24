@@ -1,7 +1,7 @@
 # CS570_A2_PAM
 In this program, we are implementing a program actuator and microshell.
 
-Author: Alex Gonzalez, Pierrer Kahart
+Author: Alex Gonzalez, Pierrer Kharat
 User: cssc0816
 Class: CS 570, Summer 2019
 Assignment 2, PAM

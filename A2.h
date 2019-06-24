@@ -1,4 +1,4 @@
-#include<stdio.h>
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -21,4 +21,4 @@ int parsePipe(char* str, char** str_piped);
 void parseSpace(char* str, char** parsed);
 void execArgs(char** parsed);
 void execArgsPiped(char** parsed, char** parsedPiped);
-char *strlwr(char *str) 
+char *strlwr(char *str);

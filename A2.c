@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
 		
 		// Execute piped command
 		if(execFlag == 2)
-			execArgsPiped(parsedArgs, parsedArgsPiped);
+			execArgsPiped(parsedArgsPiped);
 	} // End while
 	return 0;
 } // End main
@@ -44,18 +44,22 @@ int getInput(char* str) {
   * Processes user input
   */
 int processStr(char* str, char** parsed, char** parsedPiped) {
-	char* str_piped[2];
+	char* str_piped[MAX_PIPE];
 	int piped = 0;
 	
 	piped = parsePipe(str, str_piped);
 	
 	// Piped command is parsed
 	if(piped) {
-		parseSpace(str_piped[0], parsed);
-		parseSpace(str_piped[1], parsedPiped);
+		parseSpace(str_piped, parsedPiped);
 	}
 	// Normal command is parsed
 	else parseSpace(str, parsed);
+	
+	if(parsed[3] != NULL) {
+		printf("\nCan only accept one argument\n");
+		return 0;
+	}
 	
 	// Checks if user invoked "exit" command
 	char* strLow = strlwr(parsed[0]);
@@ -77,6 +81,7 @@ int parsePipe(char* str, char** str_piped) {
 	for(i = 0; i < MAX_PIPE; i++) {
 		str_piped[i] = strsep(&str, "|");
 		if(str_piped[i] == NULL) break;
+		n = --i;
 	} // End for
 	
 	if(str_piped[1] == NULL) return 0;
@@ -84,7 +89,8 @@ int parsePipe(char* str, char** str_piped) {
 } // End parsePipe()
  
 /**
-  * Parses normal command
+  * Parses normal command;
+  * takes single string as input
   */	
 void parseSpace(char* str, char** parsed) {
 	// Tokenizes either normal
@@ -101,6 +107,27 @@ void parseSpace(char* str, char** parsed) {
 		if(strlen(parsed[i]) == 0) i--;
 	} // End for
 } // End parseSpace()
+
+/**
+  * Parses normal command;
+  * takes string array as input
+  */	
+void parseSpace(char** str, char** parsed) {
+	// Tokenizes either normal
+	// or piped commands, using
+	// whitespace as delimiter
+	int i;
+	for(i = 0; i < MAX_LIST; i++) {
+		parsed[i] = strsep(str[i], " ");
+		 
+		// If end of array is reached
+		if(parsed[i] == NULL) break;
+		 
+		// If token is '\0', ignore it
+		if(strlen(parsed[i]) == 0) i--;
+	} // End for
+} // End parseSpace()
+ 
  
 /**
   * Executes normal system commands
@@ -128,55 +155,78 @@ void execArgs(char** parsed) {
 /**
   * Executes piped system commands
   */
-void execArgsPiped(char** parsed, char** parsedPiped) {
-	int pipefd[2];
-	pid_t p1, p2;
+void execArgsPiped(char** parsedPiped) {
+	int i;
+	pid_t pid;
+	int in, fd[2];
 	
-	if(pipe(pipefd) < 0) {
+	// First process gets input from original fd
+	in = 0;
+	
+	// We loop through all but the last process
+	for(i = 0; i < n - 1; i++) {
+		pipe(fd);
+		
+		// fd[1] is write end of pipe, 
+		// carry "in" from previous iteration
+		spawn_proc(in, fd[1], parsedPiped[i]);
+		
+		// Close write end of pipe, child will
+		// write to next pipe
+		close(fd[1]);
+		
+		// Keep read end of pipe, child will 
+		// read from here
+		in = fd[0];
+	} // End for
+	
+	// Last process, set stdin to read end of
+	// previous pipe and output to original fd
+	if(in != 0) dup2(in, 0);
+		
+	// Run the last process
+	if(execvp(parsedPiped[i], parsedPiped) < 0) {
+		printf("\nUnable to execute command 2\n");
+		exit(0);
+	}
+} // End void execArgsPiped()
+
+void spawn_proc(int in, int out, char** parsedPiped) {
+	pid_t pid; 
+	
+	pid = fork();
+	
+	if(pid < 0) {
 		printf("\nUnable to create pipe\n");
 		return;
 	}
 	
-	p1 = fork();
-	
-	// Child 1 is running
-	if(p1 < 0) {
-		close(pipefd[0]); // Close (unused) read end of pipe
-		dup2(pipefd[1], STDOUT_FILENO); // Maps input end of pipe to stdout
-		close(pipefd[1]);
-		
-		if(execvp(parsed[0], parsed) < 0) {
-			printf("\nUnable to execute command 1\n");
-			exit(0);
+	if(pid == 0) {
+		if(in != 0) {
+			dup(in, 0);
+			close(in);
 		}
-	}
-	// Parent is running
-	else {
-		p2 = fork();
 		
-		// Child 2 is running
-		if(p2 == 0) {
-			close(pipefd[1]); // Close (unused) write end of pipe
-			dup2(pipefd[0], STDIN_FILENO); 
-			close(pipefd[0]); 
-			if(execvp(parsedPiped[0], parsedPiped) < 0) {
-				printf("\nUnable to execute command 2\n");
+		if(out != 1) {
+			dup(out, 1);
+			close(out);
+		}
+		
+		if(execvp(parsedPiped[0], parsedPiped) < 0) {
+				printf("\nUnable to execute piped command\n");
 				exit(0);
-			}
-		}
-		// Parent is running, wait for child processes to end
-		else {
-			wait(NULL);
-			wait(NULL);
 		}
 	}
-} // End void execArgsPiped()
+}
 
+/**
+  * Converts string to lowercase
+  */
 char *strlwr(char *str) {
 	unsigned char *p = (unsigned char *)str;
 	
 	while(*p) {
-		*p = tolower((unsigned char) *p);
+		*p = tolower((unsigned char) *p;
 		 p++;
 	} // End while
 	

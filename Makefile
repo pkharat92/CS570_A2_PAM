@@ -1,7 +1,7 @@
 ###########################################################
 #
 # Name: Alex Gonzalez, Pierre Kahart
-# User: cssc0816
+# User: cssc0816, cssc0844
 # Class: CS 570, Summer 2019
 # Assignment 2, PAM
 # Filename: Makefile

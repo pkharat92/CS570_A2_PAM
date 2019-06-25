@@ -2,7 +2,7 @@
 In this program, we are implementing a program actuator and microshell.
 
 Author: Alex Gonzalez, Pierrer Kharat
-User: cssc0816
+User: cssc0816, cssc0844
 Class: CS 570, Summer 2019
 Assignment 2, PAM
 Filename: README.txt
